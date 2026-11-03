@@ -1,0 +1,13 @@
+# Protect uploads directory from script execution
+Options -Indexes -ExecCGI
+
+<FilesMatch "\.(php|phtml|php3|php4|php5|phps|cgi|pl|py|sh|asp|aspx|jsp)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# Force PDF MIME type header for security
+<FilesMatch "\.(?i:pdf)$">
+    Header set Content-Type "application/pdf"
+    Header set X-Content-Type-Options "nosniff"
+</FilesMatch>

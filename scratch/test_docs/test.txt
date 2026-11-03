@@ -1,0 +1,3 @@
+Title: Operating Systems Revision Notes
+Line 1: A process is an instance of a program in execution.
+Line 2: States: New, Ready, Running, Waiting, Terminated.

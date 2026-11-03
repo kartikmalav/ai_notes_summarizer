@@ -1,0 +1,3 @@
+--- Page 1 ---
+Computer Architecture Notes.
+CPU, ALUs, Registers, Control Unit.
