@@ -1,0 +1,46 @@
+<?php
+/**
+ * PDO connection for the project's MySQL/MariaDB schema.
+ * Credentials are supplied by the local environment, not this source file.
+ */
+
+$dbHost = getenv('DB_HOST');
+$dbPort = getenv('DB_PORT');
+$dbName = getenv('DB_NAME');
+$dbUser = getenv('DB_USER');
+$dbPassword = getenv('DB_PASSWORD');
+if ($dbPassword === false) {
+    $dbPassword = getenv('DB_PASS');
+}
+$dbCharset = getenv('DB_CHARSET');
+
+define('DB_HOST', $dbHost === false || $dbHost === '' ? '127.0.0.1' : $dbHost);
+define('DB_PORT', $dbPort === false || $dbPort === '' ? '3307' : $dbPort);
+define('DB_NAME', $dbName === false || $dbName === '' ? 'ai_notes_summarizer' : $dbName);
+define('DB_USER', $dbUser === false || $dbUser === '' ? 'root' : $dbUser);
+define('DB_PASS', $dbPassword === false ? '' : $dbPassword);
+define('DB_CHARSET', $dbCharset === false || $dbCharset === '' ? 'utf8mb4' : $dbCharset);
+
+function getDBConnection() {
+    static $pdo = null;
+
+    if ($pdo === null) {
+        $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=' . DB_CHARSET;
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+            PDO::ATTR_TIMEOUT => 5,
+        ];
+
+        try {
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, $options);
+        } catch (PDOException $e) {
+            error_log('Database connection failed (SQLSTATE ' . $e->getCode() . '). Check the local database host, port, name, username, and password settings.');
+            http_response_code(500);
+            exit('Database connection failed. Check that MySQL is running and the local database settings are correct.');
+        }
+    }
+
+    return $pdo;
+}

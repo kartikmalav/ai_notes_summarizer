@@ -1,6 +1,6 @@
 <?php
 /**
- * API Endpoint: Generate AI Important Questions via Gemini API
+ * API Endpoint: Generate AI Important Questions via Groq API
  * AI-Based PDF Notes Summarizer and Question Generator
  */
 
@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/gemini.php';
+require_once __DIR__ . '/../includes/groq.php';
 
 // Enforce login check
 if (!is_logged_in()) {
@@ -79,8 +79,8 @@ try {
         exit();
     }
 
-    // 3. Send extracted text to Gemini API through PHP backend
-    $result = generate_pdf_important_questions($pdfText, $pdf['subject'] ?: 'Computer Science');
+    // 3. Send extracted text to Groq API through PHP backend
+    $result = groq_generate_important_questions($pdfText, $pdf['subject'] ?: 'Computer Science');
 
     if (!$result['success']) {
         http_response_code(500);

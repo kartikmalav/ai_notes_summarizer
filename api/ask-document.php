@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/gemini.php';
+require_once __DIR__ . '/../includes/groq.php';
 require_once __DIR__ . '/../includes/markdown.php';
 
 // Enforce login check
@@ -175,8 +175,8 @@ try {
         exit();
     }
 
-    // Send question to Gemini with document excerpts and recent history
-    $result = answer_document_question(
+    // Send question to Groq with document excerpts and recent history
+    $result = groq_answer_document_question(
         $docText,
         $pdf['original_filename'],
         $pdf['subject'] ?: 'General',

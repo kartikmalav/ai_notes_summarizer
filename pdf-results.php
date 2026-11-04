@@ -370,7 +370,7 @@ include __DIR__ . '/includes/header.php';
         <!-- Loading & Progress Box (Hidden by default) -->
         <div id="aiLoadingBox" class="alert alert-info" style="display: none; padding: 24px; border-radius: var(--radius-lg); text-align: center; margin-bottom: 24px;">
             <div style="font-size: 2.5rem; margin-bottom: 10px; animation: pulse 1.5s infinite;">🤖</div>
-            <h3 id="aiLoadingTitle" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">Gemini AI is processing...</h3>
+            <h3 id="aiLoadingTitle" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">Groq AI is processing...</h3>
             <p id="aiLoadingSub" style="font-size: 0.9rem;">
                 Analyzing document content and generating structured study material. This takes 5–10 seconds.
             </p>
@@ -478,7 +478,7 @@ function triggerSummaryGeneration(pdfId) {
     const errorText = document.getElementById('aiErrorText');
 
     if (btn) btn.disabled = true;
-    if (loadingTitle) loadingTitle.textContent = 'Gemini AI is generating your short notes...';
+    if (loadingTitle) loadingTitle.textContent = 'Groq AI is generating your short notes...';
     if (loadingSub) loadingSub.textContent = 'Extracting key concepts, formulas, and revision points from your document.';
     if (loadingBox) loadingBox.style.display = 'block';
     if (errorBox) errorBox.style.display = 'none';
@@ -505,7 +505,7 @@ function triggerSummaryGeneration(pdfId) {
         console.error('Fetch Error:', err);
         if (loadingBox) loadingBox.style.display = 'none';
         if (btn) btn.disabled = false;
-        if (errorText) errorText.textContent = 'Network or server error while requesting Gemini API.';
+        if (errorText) errorText.textContent = 'Network or server error while requesting Groq API.';
         if (errorBox) errorBox.style.display = 'flex';
     });
 }
@@ -519,7 +519,7 @@ function triggerQuestionsGeneration(pdfId) {
     const errorText = document.getElementById('aiErrorText');
 
     if (btn) btn.disabled = true;
-    if (loadingTitle) loadingTitle.textContent = 'Gemini AI is generating 2-Mark, 5-Mark & 10-Mark Exam Questions...';
+    if (loadingTitle) loadingTitle.textContent = 'Groq AI is generating 2-Mark, 5-Mark & 10-Mark Exam Questions...';
     if (loadingSub) loadingSub.textContent = 'Analyzing content to construct comprehensive exam answers.';
     if (loadingBox) loadingBox.style.display = 'block';
     if (errorBox) errorBox.style.display = 'none';
@@ -546,7 +546,7 @@ function triggerQuestionsGeneration(pdfId) {
         console.error('Fetch Error:', err);
         if (loadingBox) loadingBox.style.display = 'none';
         if (btn) btn.disabled = false;
-        if (errorText) errorText.textContent = 'Network or server error while requesting Gemini API.';
+        if (errorText) errorText.textContent = 'Network or server error while requesting Groq API.';
         if (errorBox) errorBox.style.display = 'flex';
     });
 }

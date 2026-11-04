@@ -1,0 +1,322 @@
+<?php
+/**
+ * Native Multi-Format Document Extraction Module
+ * AI-Based Study Assistant (PDF, DOCX, TXT, CSV, XLSX, PPTX)
+ */
+
+require_once __DIR__ . '/../config/config.php';
+
+/**
+ * Extract normalized text content from any supported document format
+ * 
+ * @param string $filePath Full path to the uploaded document
+ * @param string $fileType File extension/type (pdf, docx, txt, csv, xlsx, pptx)
+ * @param string|null $textFilePath Companion text file path (for PDF or pre-extracted text)
+ * @return array ['success' => bool, 'text' => string, 'item_count' => int, 'error' => string|null]
+ */
+function extract_document_text($filePath, $fileType, $textFilePath = null) {
+    $fileType = strtolower(trim($fileType));
+
+    if (!file_exists($filePath)) {
+        return [
+            'success' => false,
+            'text' => '',
+            'item_count' => 0,
+            'error' => "Source document file not found at path: {$filePath}"
+        ];
+    }
+
+    switch ($fileType) {
+        case 'txt':
+            return extract_txt_content($filePath);
+
+        case 'csv':
+            return extract_csv_content($filePath);
+
+        case 'docx':
+            return extract_docx_content($filePath);
+
+        case 'xlsx':
+            return extract_xlsx_content($filePath);
+
+        case 'pptx':
+            return extract_pptx_content($filePath);
+
+        case 'pdf':
+            return extract_pdf_content($filePath, $textFilePath);
+
+        default:
+            return [
+                'success' => false,
+                'text' => '',
+                'item_count' => 0,
+                'error' => "Unsupported document file type: .{$fileType}"
+            ];
+    }
+}
+
+/**
+ * Extract text from Plain Text (.txt) files
+ */
+function extract_txt_content($filePath) {
+    $raw = @file_get_contents($filePath);
+    if ($raw === false) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'Failed to read plain text file.'];
+    }
+
+    // Convert encoding to UTF-8 safely
+    $text = mb_convert_encoding($raw, 'UTF-8', 'UTF-8, ISO-8859-1, ASCII');
+    $text = trim($text);
+
+    // Calculate approximate paragraph / line count
+    $lines = explode("\n", $text);
+    $lineCount = count(array_filter($lines));
+
+    return [
+        'success' => true,
+        'text' => $text,
+        'item_count' => max(1, $lineCount),
+        'error' => null
+    ];
+}
+
+/**
+ * Extract text from Comma Separated Values (.csv) files
+ */
+function extract_csv_content($filePath) {
+    $handle = @fopen($filePath, 'r');
+    if (!$handle) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'Failed to open CSV file for reading.'];
+    }
+
+    $formattedRows = [];
+    $rowCount = 0;
+
+    while (($data = fgetcsv($handle, 4096, ',')) !== false) {
+        $rowCount++;
+        // Clean empty cells
+        $cleanCells = array_map(function($cell) {
+            return trim(mb_convert_encoding($cell, 'UTF-8', 'UTF-8, ISO-8859-1, ASCII'));
+        }, $data);
+
+        // Skip completely empty rows
+        if (count(array_filter($cleanCells)) === 0) continue;
+
+        $formattedRows[] = "[Row {$rowCount}] " . implode(" | ", $cleanCells);
+    }
+    fclose($handle);
+
+    $fullText = "DOCUMENT TYPE: CSV Spreadsheet\nTOTAL ROWS: {$rowCount}\n\n" . implode("\n", $formattedRows);
+
+    return [
+        'success' => true,
+        'text' => trim($fullText),
+        'item_count' => $rowCount,
+        'error' => null
+    ];
+}
+
+/**
+ * Extract text from Microsoft Word (.docx) files using ZipArchive + SimpleXML
+ */
+function extract_docx_content($filePath) {
+    if (!class_exists('ZipArchive')) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'PHP ZipArchive extension is required to extract DOCX files.'];
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($filePath) !== true) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'Failed to open DOCX zip container.'];
+    }
+
+    $xmlContent = $zip->getFromName('word/document.xml');
+    $zip->close();
+
+    if (!$xmlContent) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'word/document.xml missing from DOCX file.'];
+    }
+
+    // Replace XML tags to preserve paragraph structure
+    $xmlContent = str_replace('</w:p>', "\n\n", $xmlContent);
+    $xmlContent = str_replace(['</w:tr>', '</w:tc>'], ["\n", " | "], $xmlContent);
+
+    // Strip remaining XML tags safely
+    $text = strip_tags($xmlContent);
+    $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
+    $text = preg_replace("/\n\s+\n/", "\n\n", $text);
+    $text = trim($text);
+
+    $paragraphs = array_filter(explode("\n\n", $text));
+    $paraCount = count($paragraphs);
+
+    $fullText = "DOCUMENT TYPE: DOCX Word Document\nPARAGRAPHS: {$paraCount}\n\n" . $text;
+
+    return [
+        'success' => true,
+        'text' => $fullText,
+        'item_count' => max(1, $paraCount),
+        'error' => null
+    ];
+}
+
+/**
+ * Extract text from Microsoft Excel (.xlsx) files using ZipArchive + XML parsing
+ */
+function extract_xlsx_content($filePath) {
+    if (!class_exists('ZipArchive')) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'PHP ZipArchive extension is required for XLSX files.'];
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($filePath) !== true) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'Failed to open XLSX zip container.'];
+    }
+
+    // Parse Shared Strings Dictionary
+    $sharedStrings = [];
+    $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
+    if ($sharedStringsXml) {
+        $xml = @simplexml_load_string($sharedStringsXml);
+        if ($xml) {
+            foreach ($xml->si as $val) {
+                if (isset($val->t)) {
+                    $sharedStrings[] = (string)$val->t;
+                } elseif (isset($val->r)) {
+                    $t = '';
+                    foreach ($val->r as $r) {
+                        $t .= (string)$r->t;
+                    }
+                    $sharedStrings[] = $t;
+                } else {
+                    $sharedStrings[] = '';
+                }
+            }
+        }
+    }
+
+    // Iterate through Sheet XML files
+    $sheetsOutput = [];
+    $sheetCount = 0;
+
+    for ($i = 1; $i <= 50; $i++) {
+        $sheetXmlContent = $zip->getFromName("xl/worksheets/sheet{$i}.xml");
+        if (!$sheetXmlContent) continue;
+
+        $sheetCount++;
+        $xml = @simplexml_load_string($sheetXmlContent);
+        if (!$xml) continue;
+
+        $rowsData = [];
+        $rowIdx = 0;
+
+        foreach ($xml->sheetData->row as $row) {
+            $rowIdx++;
+            $cells = [];
+            foreach ($row->c as $cell) {
+                $cellVal = '';
+                $type = (string)$cell['t'];
+
+                if ($type === 's') { // Shared String
+                    $idx = (int)$cell->v;
+                    $cellVal = $sharedStrings[$idx] ?? '';
+                } elseif ($type === 'inlineStr') {
+                    $cellVal = (string)$cell->is->t;
+                } else {
+                    $cellVal = (string)$cell->v;
+                }
+
+                $cells[] = trim($cellVal);
+            }
+            if (count(array_filter($cells)) > 0) {
+                $rowsData[] = "[Row {$rowIdx}] " . implode(" | ", $cells);
+            }
+        }
+
+        if (!empty($rowsData)) {
+            $sheetsOutput[] = "=== SHEET {$sheetCount} ===\n" . implode("\n", $rowsData);
+        }
+    }
+
+    $zip->close();
+
+    $fullText = "DOCUMENT TYPE: XLSX Excel Workbook\nSHEETS PROCESSED: {$sheetCount}\n\n" . implode("\n\n", $sheetsOutput);
+
+    return [
+        'success' => true,
+        'text' => trim($fullText),
+        'item_count' => max(1, $sheetCount),
+        'error' => null
+    ];
+}
+
+/**
+ * Extract text from Microsoft PowerPoint (.pptx) files using ZipArchive + XML parsing
+ */
+function extract_pptx_content($filePath) {
+    if (!class_exists('ZipArchive')) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'PHP ZipArchive extension is required for PPTX files.'];
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($filePath) !== true) {
+        return ['success' => false, 'text' => '', 'item_count' => 0, 'error' => 'Failed to open PPTX zip container.'];
+    }
+
+    $slidesOutput = [];
+    $slideCount = 0;
+
+    for ($i = 1; $i <= 100; $i++) {
+        $slideXmlContent = $zip->getFromName("ppt/slides/slide{$i}.xml");
+        if (!$slideXmlContent) continue;
+
+        $slideCount++;
+        // Add space after paragraph tags before stripping XML
+        $cleanXml = str_replace('</a:p>', "\n", $slideXmlContent);
+        $slideText = strip_tags($cleanXml);
+        $slideText = html_entity_decode($slideText, ENT_QUOTES, 'UTF-8');
+        $slideText = preg_replace("/\n\s+\n/", "\n", $slideText);
+        $slideText = trim($slideText);
+
+        if (!empty($slideText)) {
+            $slidesOutput[] = "--- SLIDE {$slideCount} ---\n" . $slideText;
+        }
+    }
+
+    $zip->close();
+
+    $fullText = "DOCUMENT TYPE: PPTX PowerPoint Presentation\nTOTAL SLIDES: {$slideCount}\n\n" . implode("\n\n", $slidesOutput);
+
+    return [
+        'success' => true,
+        'text' => trim($fullText),
+        'item_count' => max(1, $slideCount),
+        'error' => null
+    ];
+}
+
+/**
+ * Extract / load text for PDF documents
+ */
+function extract_pdf_content($filePath, $textFilePath = null) {
+    // If stored extracted text file exists, load it
+    $targetTextPath = $textFilePath ?: ($filePath . '.txt');
+
+    if (file_exists($targetTextPath)) {
+        $text = @file_get_contents($targetTextPath);
+        if (!empty(trim($text))) {
+            return [
+                'success' => true,
+                'text' => trim($text),
+                'item_count' => 1,
+                'error' => null
+            ];
+        }
+    }
+
+    return [
+        'success' => false,
+        'text' => '',
+        'item_count' => 0,
+        'error' => 'PDF extracted text file not found.'
+    ];
+}

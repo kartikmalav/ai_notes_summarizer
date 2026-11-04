@@ -12,7 +12,7 @@
                 &copy; <?= date('Y') ?> <strong>AI-Based PDF Notes Summarizer and Question Generator</strong> | BCA 3rd Semester Project
             </div>
             <div>
-                Powered by PHP 8, MySQL & Google Gemini AI
+                Powered by PHP 8, MySQL & Groq AI
             </div>
         </footer>
     </div> <!-- End .main-wrapper -->

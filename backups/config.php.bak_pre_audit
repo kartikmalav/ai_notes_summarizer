@@ -1,0 +1,106 @@
+<?php
+/**
+ * Application Configuration
+ * High-Speed AI Study Assistant powered by Groq Cloud LPU Inference
+ * Keep credentials in the environment or .env, never in version control.
+ */
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Automatically load local .env or .env.txt if present in root
+$envPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env';
+if (!file_exists($envPath) && file_exists(dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env.txt')) {
+    $envPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env.txt';
+}
+if (file_exists($envPath) && is_readable($envPath)) {
+    $envLines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($envLines as $line) {
+        $line = trim($line);
+        if ($line === '' || strpos($line, '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($envKey, $envVal) = explode('=', $line, 2);
+            $envKey = trim($envKey);
+            $envVal = trim($envVal);
+            if (strlen($envVal) >= 2 && (($envVal[0] === '"' && substr($envVal, -1) === '"') || ($envVal[0] === "'" && substr($envVal, -1) === "'"))) {
+                $envVal = substr($envVal, 1, -1);
+            }
+            if (!empty($envKey)) {
+                if (getenv($envKey) === false) {
+                    putenv("{$envKey}={$envVal}");
+                }
+                if (!isset($_ENV[$envKey])) {
+                    $_ENV[$envKey] = $envVal;
+                }
+                if (!isset($_SERVER[$envKey])) {
+                    $_SERVER[$envKey] = $envVal;
+                }
+            }
+        }
+    }
+}
+
+define('APP_NAME', 'AI PDF Notes Summarizer');
+define('APP_SUBTITLE', 'Smart AI Study Assistant for BCA Students');
+define('APP_VERSION', '2.0.0');
+define('BASE_URL', '/ai_notes_summarizer/');
+
+define('UPLOAD_DIR', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR);
+define('MAX_FILE_SIZE', 50 * 1024 * 1024);
+define('ALLOWED_EXTENSIONS', ['pdf', 'docx', 'txt', 'csv', 'xlsx', 'pptx']);
+
+// Groq API Key Configuration (Read securely from environment or .env)
+$groqApiKey = getenv('GROQ_API_KEY');
+if ($groqApiKey === false || $groqApiKey === '') {
+    $groqApiKey = $_SERVER['GROQ_API_KEY'] ?? ($_ENV['GROQ_API_KEY'] ?? '');
+}
+define('GROQ_API_KEY', is_string($groqApiKey) ? trim($groqApiKey) : '');
+
+// Groq Model Configuration (Flagship OpenAI GPT-OSS 120B with 128k context)
+$groqModel = getenv('GROQ_MODEL');
+if ($groqModel === false || $groqModel === '') {
+    $groqModel = $_SERVER['GROQ_MODEL'] ?? ($_ENV['GROQ_MODEL'] ?? 'openai/gpt-oss-120b');
+}
+define('GROQ_MODEL', is_string($groqModel) && trim($groqModel) !== '' ? trim($groqModel) : 'openai/gpt-oss-120b');
+
+function get_format_icon($extension) {
+    $ext = strtolower(trim($extension));
+    switch ($ext) {
+        case 'docx': return '📝';
+        case 'txt':  return '📑';
+        case 'csv':  return '📊';
+        case 'xlsx': return '📈';
+        case 'pptx': return '📊';
+        case 'pdf': default: return '📄';
+    }
+}
+
+function url($path = '') {
+    return BASE_URL . ltrim($path, '/');
+}
+
+function display_flash_message() {
+    if (isset($_SESSION['flash_message'])) {
+        $msg = $_SESSION['flash_message'];
+        $type = $_SESSION['flash_type'] ?? 'info';
+
+        echo '<div class="alert alert-' . htmlspecialchars($type) . ' flash-alert" id="flashAlert">';
+        echo '<div class="alert-icon">';
+        if ($type === 'success') echo '✓';
+        elseif ($type === 'danger') echo '⚠';
+        else echo 'ℹ';
+        echo '</div>';
+        echo '<div class="alert-body">' . htmlspecialchars($msg) . '</div>';
+        echo '<button type="button" class="alert-close" onclick="this.parentElement.remove()">&times;</button>';
+        echo '</div>';
+
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+    }
+}
+
+function set_flash_message($message, $type = 'info') {
+    $_SESSION['flash_message'] = $message;
+    $_SESSION['flash_type'] = $type;
+}

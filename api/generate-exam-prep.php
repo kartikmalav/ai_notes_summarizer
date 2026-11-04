@@ -1,6 +1,6 @@
 <?php
 /**
- * API Endpoint: Generate AI Exam Preparation Material via Gemini API
+ * API Endpoint: Generate AI Exam Preparation Material via Groq API
  * AI-Based PDF Notes Summarizer and Question Generator
  */
 
@@ -9,7 +9,7 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/gemini.php';
+require_once __DIR__ . '/../includes/groq.php';
 require_once __DIR__ . '/../includes/document-extractor.php';
 
 // 1. Enforce login check
@@ -78,15 +78,15 @@ try {
         exit();
     }
 
-    // 4. Send extracted text to Gemini API through PHP backend
-    $result = generate_exam_preparation_material($docText, $pdf['subject'] ?: 'General');
+    // 4. Send extracted text to Groq API through PHP backend
+    $result = groq_generate_exam_prep($docText, $pdf['subject'] ?: 'General');
 
     if (!$result['success']) {
         http_response_code(500);
         $errMsg = $result['error'] ?? 'Failed to generate Exam Preparation Kit.';
         // Safety: Ensure API key is never exposed in error responses
-        if (defined('GEMINI_API_KEY') && GEMINI_API_KEY) {
-            $errMsg = str_replace(GEMINI_API_KEY, '[REDACTED_API_KEY]', $errMsg);
+        if (defined('GROQ_API_KEY') && GROQ_API_KEY) {
+            $errMsg = str_replace(GROQ_API_KEY, '[REDACTED_API_KEY]', $errMsg);
         }
         echo json_encode(['success' => false, 'error' => $errMsg]);
         exit();

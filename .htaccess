@@ -1,0 +1,29 @@
+# Root Security Rules for AI Notes Summarizer
+# Protect sensitive files, configuration, environment variables, and repository files
+
+<FilesMatch "^\.env|^\.git|schema\.sql|\.md$|composer\.json|package\.json">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Specifically deny .env and .env.txt
+<Files ".env">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files ".env.txt">
+    Order allow,deny
+    Deny from all
+</Files>
+<Files "schema.sql">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Disable Directory Browsing / Indexing across all subdirectories
+Options -Indexes
+
+# Prevent execution of scripts in uploads directory (reinforced)
+# UTF-8 Encoding default
+AddDefaultCharset UTF-8
+

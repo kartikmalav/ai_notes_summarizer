@@ -226,7 +226,7 @@ include __DIR__ . '/includes/header.php';
         <div id="mcqLoadingBox" class="alert alert-info" style="display: none; padding: 28px; border-radius: var(--radius-lg); text-align: center; margin-bottom: 24px;">
             <div style="font-size: 2.8rem; margin-bottom: 10px; animation: pulse 1.5s infinite;">🤖</div>
             <h3 id="mcqLoadingTitle" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 6px;">
-                Gemini AI is generating your 10 MCQs...
+                Groq AI is generating your 10 MCQs...
             </h3>
             <p id="mcqLoadingSub" style="font-size: 0.92rem;">
                 Analyzing document concepts, formulating rigorous questions, and verifying options. This takes about 5–10 seconds.

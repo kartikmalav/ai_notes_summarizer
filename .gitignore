@@ -2,8 +2,3 @@
 /.env
 /.env.*
 !/config/config.example.php
-
-# Backups
-/backups_audit/
-/New folder/
-*.bak

@@ -15,7 +15,7 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/markdown.php';
-require_once __DIR__ . '/includes/gemini.php';
+require_once __DIR__ . '/includes/groq.php';
 
 require_login();
 
@@ -258,7 +258,7 @@ include __DIR__ . '/includes/header.php';
                     <button type="button" class="btn btn-sm btn-outline" onclick="copyFullExamKit();" id="copyKitBtn" title="Copy Complete Kit Markdown to Clipboard">
                         📋 Copy Kit
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" onclick="confirmRegenerate(<?= $pdf['id'] ?>)" title="Regenerate Kit with Gemini AI">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="confirmRegenerate(<?= $pdf['id'] ?>)" title="Regenerate Kit with Groq AI">
                         🔄 Regenerate
                     </button>
                 <?php endif; ?>
@@ -284,7 +284,7 @@ include __DIR__ . '/includes/header.php';
         <div id="aiLoadingBox" class="alert alert-info" style="display: none; padding: 30px; border-radius: var(--radius-lg); text-align: center; margin-bottom: 24px;">
             <div style="font-size: 3rem; margin-bottom: 12px; animation: pulse 1.5s infinite;">🤖</div>
             <h3 id="aiLoadingTitle" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 8px;">
-                Gemini AI is generating your Exam Preparation Kit...
+                Groq AI is generating your Exam Preparation Kit...
             </h3>
             <p id="aiLoadingSub" style="font-size: 0.92rem; max-width: 600px; margin: 0 auto;">
                 Analyzing document content and constructing 2-Mark, 5-Mark, and 10-Mark questions with high-yield revision notes and key definitions. This takes 5–15 seconds.
@@ -309,7 +309,7 @@ include __DIR__ . '/includes/header.php';
                 </h3>
                 <p style="font-size: 0.95rem; color: var(--text-muted); max-width: 620px; margin: 0 auto 28px; line-height: 1.6;">
                     Click below to generate a comprehensive 5-part study kit for <strong><?= htmlspecialchars($pdf['original_filename']) ?></strong>.
-                    Gemini AI will extract short answers, medium conceptual questions, essay prompts, topic summaries, and essential definitions.
+                    Groq AI will extract short answers, medium conceptual questions, essay prompts, topic summaries, and essential definitions.
                 </p>
 
                 <!-- Section Highlights Grid -->
@@ -599,7 +599,7 @@ function triggerExamPrepGeneration(pdfId) {
     const errorText = document.getElementById('aiErrorText');
 
     if (btn) btn.disabled = true;
-    if (loadingTitle) loadingTitle.textContent = 'Gemini AI is generating your 5-part Exam Kit...';
+    if (loadingTitle) loadingTitle.textContent = 'Groq AI is generating your 5-part Exam Kit...';
     if (loadingSub) loadingSub.textContent = 'Generating 2-Mark, 5-Mark, 10-Mark Questions, Revision Notes, and Key Definitions. This takes 5–15 seconds.';
     if (loadingBox) loadingBox.style.display = 'block';
     if (errorBox) errorBox.style.display = 'none';
@@ -626,13 +626,13 @@ function triggerExamPrepGeneration(pdfId) {
         console.error('Fetch Error:', err);
         if (loadingBox) loadingBox.style.display = 'none';
         if (btn) btn.disabled = false;
-        if (errorText) errorText.textContent = 'Network or server error while requesting Gemini API.';
+        if (errorText) errorText.textContent = 'Network or server error while requesting Groq API.';
         if (errorBox) errorBox.style.display = 'flex';
     });
 }
 
 function confirmRegenerate(pdfId) {
-    if (confirm('Regenerate this Exam Preparation Kit? This will query Gemini AI to create fresh questions, revision notes, and definitions.')) {
+    if (confirm('Regenerate this Exam Preparation Kit? This will query Groq AI to create fresh questions, revision notes, and definitions.')) {
         triggerExamPrepGeneration(pdfId);
     }
 }

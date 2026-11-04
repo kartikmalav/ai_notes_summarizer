@@ -1,7 +1,7 @@
 <?php
 /**
  * Safe configuration template. The application reads secrets from environment
- * variables; set GEMINI_API_KEY in Apache/PHP and do not paste it into this file.
+ * variables or .env file; set GROQ_API_KEY in Apache/PHP or a local .env file.
  */
 
 if (session_status() === PHP_SESSION_NONE) {
@@ -10,14 +10,17 @@ if (session_status() === PHP_SESSION_NONE) {
 
 define('APP_NAME', 'AI PDF Notes Summarizer');
 define('APP_SUBTITLE', 'Smart AI Study Assistant for BCA Students');
-define('APP_VERSION', '1.0.0');
+define('APP_VERSION', '2.0.0');
 define('BASE_URL', '/ai_notes_summarizer/');
 define('UPLOAD_DIR', dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR);
 define('MAX_FILE_SIZE', 50 * 1024 * 1024);
 define('ALLOWED_EXTENSIONS', ['pdf', 'docx', 'txt', 'csv', 'xlsx', 'pptx']);
 
-$geminiApiKey = getenv('GEMINI_API_KEY');
-define('GEMINI_API_KEY', $geminiApiKey === false ? '' : trim($geminiApiKey));
+$groqApiKey = getenv('GROQ_API_KEY');
+define('GROQ_API_KEY', $groqApiKey === false ? '' : trim($groqApiKey));
+
+$groqModel = getenv('GROQ_MODEL');
+define('GROQ_MODEL', $groqModel === false ? 'llama-3.3-70b-versatile' : trim($groqModel));
 
 function get_format_icon($extension) {
     $ext = strtolower(trim($extension));

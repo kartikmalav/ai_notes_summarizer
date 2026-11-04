@@ -117,9 +117,10 @@ Set these variables for Apache:
 | `DB_USER` | `root` (XAMPP default; a dedicated local user is also supported) |
 | `DB_PASSWORD` | Your current MySQL password; leave empty only if your local account has no password |
 | `DB_CHARSET` | `utf8mb4` |
-| `GEMINI_API_KEY` | Your Google Gemini API key; needed only for AI generation features |
+| `GROQ_API_KEY` | Your Groq Cloud API key; needed for all AI generation features |
+| `GROQ_MODEL` | Optional model override (defaults to `llama-3.3-70b-versatile`) |
 
-For XAMPP on Windows, add `SetEnv DB_HOST "127.0.0.1"`, `SetEnv DB_PORT "3307"`, `SetEnv DB_NAME "ai_notes_summarizer"`, `SetEnv DB_USER "root"`, `SetEnv DB_PASSWORD "your-local-password"`, and `SetEnv GEMINI_API_KEY "your-api-key"` to the Apache configuration outside this project (for example `C:\xampp\apache\conf\extra\httpd-xampp.conf`), then restart Apache. Replace the password and key locally; do not commit them. `DB_PASS` is accepted as a compatibility fallback for `DB_PASSWORD`.
+For XAMPP on Windows, add `SetEnv DB_HOST "127.0.0.1"`, `SetEnv DB_PORT "3307"`, `SetEnv DB_NAME "ai_notes_summarizer"`, `SetEnv DB_USER "root"`, `SetEnv DB_PASSWORD "your-local-password"`, and `SetEnv GROQ_API_KEY "your-api-key"` to the Apache configuration outside this project (for example `C:\xampp\apache\conf\extra\httpd-xampp.conf`), or place `GROQ_API_KEY=your-api-key` in a local `.env` file in the project root, then restart Apache. Replace the password and key locally; do not commit them. `DB_PASS` is accepted as a compatibility fallback for `DB_PASSWORD`.
 
 The legacy source copy under `includes/config/` now forwards to `config/` and contains no credentials. Any key or password previously stored there should be rotated, especially if this folder or its history was shared.
 
