@@ -287,8 +287,8 @@ All existing records remain completely untouched:
 | MEDIUM   | login.php &          | Authentication forms lack CSRF token validation. While   | Inject csrf_token into| PENDING    |
 |          | signup.php           | delete-pdf.php uses CSRF, auth forms rely solely on POST.| forms and validate.   | (Non-break)|
 +----------+----------------------+----------------------------------------------------------+-----------------------+------------+
-| MINOR    | config/database.php  | Fallback password 'kartik8007' is hardcoded in line 14.  | Rely strictly on .env | PENDING    |
-|          |                      | Safe for local dev, but should be strictly env-driven.   | DB_PASSWORD variable. | (Best-prac)|
+| MINOR    | config/database.php  | Fallback DB password was hardcoded in line 14.           | Rely strictly on .env | FIXED      |
+|          |                      | Safe for local dev, but should be strictly env-driven.   | DB_PASSWORD variable. |            |
 +----------+----------------------+----------------------------------------------------------+-----------------------+------------+
 ```
 

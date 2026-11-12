@@ -1,4 +1,32 @@
+# Environment & Secret Configuration Files
+.env
+.env.*
+*.env
+.env.txt
 /config/config.php
-/.env
-/.env.*
 !/config/config.example.php
+*.pem
+*.key
+
+# Dependencies
+vendor/
+node_modules/
+
+# User-Uploaded Documents & Extracted Text (preserve directory rules)
+uploads/*
+!uploads/.htaccess
+!uploads/.gitkeep
+
+# Temporary, Scratch, Backup & Log Files
+scratch/
+backups/
+backups_audit/
+New folder/
+*.log
+*.tmp
+*.bak
+*.bak_*
+*.swp
+*~
+.DS_Store
+Thumbs.db

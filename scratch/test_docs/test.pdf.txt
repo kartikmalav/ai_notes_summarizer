@@ -1,3 +1,0 @@
---- Page 1 ---
-Data Structures & Algorithms Notes.
-Binary Search Trees, Heaps, AVL Trees.

@@ -1,8 +1,33 @@
 <?php
 /**
  * PDO connection for the project's MySQL/MariaDB schema.
- * Credentials and port are supplied by the local environment with safe self-healing fallback.
+ * Credentials and port are supplied strictly by environment variables or local .env.
  */
+
+// Load .env / .env.txt if environment variables are not yet populated
+if (getenv('DB_PASSWORD') === false && !isset($_SERVER['DB_PASSWORD']) && !isset($_ENV['DB_PASSWORD'])) {
+    $dbEnvPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env';
+    if (!file_exists($dbEnvPath) && file_exists(dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env.txt')) {
+        $dbEnvPath = dirname(__DIR__) . DIRECTORY_SEPARATOR . '.env.txt';
+    }
+    if (file_exists($dbEnvPath)) {
+        $rawEnv = @file_get_contents($dbEnvPath);
+        if ($rawEnv !== false) {
+            foreach (preg_split('/\r\n|\r|\n/', $rawEnv) as $line) {
+                $line = trim($line);
+                if ($line === '' || strpos($line, '#') === 0 || strpos($line, '=') === false) continue;
+                list($k, $v) = explode('=', $line, 2);
+                $k = trim($k);
+                $v = trim($v, " \t\n\r\0\x0B\"'");
+                if ($k !== '') {
+                    if (getenv($k) === false) putenv("{$k}={$v}");
+                    if (!isset($_ENV[$k])) $_ENV[$k] = $v;
+                    if (!isset($_SERVER[$k])) $_SERVER[$k] = $v;
+                }
+            }
+        }
+    }
+}
 
 $dbHost = getenv('DB_HOST') ?: ($_SERVER['DB_HOST'] ?? ($_ENV['DB_HOST'] ?? '127.0.0.1'));
 $dbPort = getenv('DB_PORT') ?: ($_SERVER['DB_PORT'] ?? ($_ENV['DB_PORT'] ?? '3306'));
@@ -10,7 +35,7 @@ $dbName = getenv('DB_NAME') ?: ($_SERVER['DB_NAME'] ?? ($_ENV['DB_NAME'] ?? 'ai_
 $dbUser = getenv('DB_USER') ?: ($_SERVER['DB_USER'] ?? ($_ENV['DB_USER'] ?? 'root'));
 $dbPassword = getenv('DB_PASSWORD');
 if ($dbPassword === false || $dbPassword === null || $dbPassword === '') {
-    $dbPassword = $_SERVER['DB_PASSWORD'] ?? ($_ENV['DB_PASSWORD'] ?? (getenv('DB_PASS') ?: ($_SERVER['DB_PASS'] ?? ($_ENV['DB_PASS'] ?? 'kartik8007'))));
+    $dbPassword = $_SERVER['DB_PASSWORD'] ?? ($_ENV['DB_PASSWORD'] ?? (getenv('DB_PASS') ?: ($_SERVER['DB_PASS'] ?? ($_ENV['DB_PASS'] ?? ''))));
 }
 $dbCharset = getenv('DB_CHARSET') ?: ($_SERVER['DB_CHARSET'] ?? ($_ENV['DB_CHARSET'] ?? 'utf8mb4'));
 
