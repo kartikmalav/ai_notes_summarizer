@@ -5,7 +5,7 @@
  */
 
 $dbHost = getenv('DB_HOST') ?: ($_SERVER['DB_HOST'] ?? ($_ENV['DB_HOST'] ?? '127.0.0.1'));
-$dbPort = getenv('DB_PORT') ?: ($_SERVER['DB_PORT'] ?? ($_ENV['DB_PORT'] ?? '3307'));
+$dbPort = getenv('DB_PORT') ?: ($_SERVER['DB_PORT'] ?? ($_ENV['DB_PORT'] ?? '3306'));
 $dbName = getenv('DB_NAME') ?: ($_SERVER['DB_NAME'] ?? ($_ENV['DB_NAME'] ?? 'ai_notes_summarizer'));
 $dbUser = getenv('DB_USER') ?: ($_SERVER['DB_USER'] ?? ($_ENV['DB_USER'] ?? 'root'));
 $dbPassword = getenv('DB_PASSWORD');
@@ -42,11 +42,9 @@ function getDBConnection() {
     static $pdo = null;
 
     if ($pdo === null) {
-        // Prioritize configured port, with automatic fallback between 3307 and 3306
+        // Connect strictly to the configured MySQL port (3306) to prevent split-brain writes
         $configuredPort = (int) DB_PORT;
         $candidatePorts = [$configuredPort];
-        if (!in_array(3306, $candidatePorts)) $candidatePorts[] = 3306;
-        if (!in_array(3307, $candidatePorts)) $candidatePorts[] = 3307;
 
         // Find the first responsive port
         $activePort = null;

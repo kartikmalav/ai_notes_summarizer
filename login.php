@@ -111,7 +111,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </form>
 
             <div class="auth-footer">
-                Don't have an account yet? <a href="<?= url('signup.php') ?>"><strong>Register here</strong></a>
+                <p style="margin-bottom: 12px;">Don't have an account yet?</p>
+                <a href="<?= url('signup.php') ?>" class="btn btn-outline btn-block" style="padding: 10px;">
+                    Create Account
+                </a>
             </div>
         </div>
     </div>
