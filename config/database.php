@@ -79,6 +79,7 @@ function getDBConnection() {
                 break;
             }
         }
+        
 
         $portsToAttempt = $activePort !== null ? [$activePort] : $candidatePorts;
 
